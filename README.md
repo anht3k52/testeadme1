@@ -110,9 +110,49 @@ yarn install
 
 ## Hướng dẫn sử dụng chi tiết
 
-### 1. Màn hình Giám sát - Xem trực tiếp
+Ứng dụng có 3 màn hình chính:
+1. **CAMERA**: Xem camera theo từng khu vực hoặc xem full tất cả
+2. **GIÁM SÁT**: Màn hình chính với 4 tab con (Xem trực tiếp, Xem lại video, Sự kiện, Cài đặt)
+3. **SỰ KIỆN**: Xem toàn bộ sự kiện đã lưu (không bị xóa sau 30 phút)
 
-Màn hình này cho phép xem video trực tiếp từ các camera theo thời gian thực.
+---
+
+### 1. Màn hình CAMERA (CameraList)
+
+Màn hình này cho phép xem camera theo khu vực một cách đơn giản.
+
+#### Tính năng chính
+
+**a) Chọn khu vực**
+- Dropdown "Chọn khu vực" để lựa chọn khu vực muốn xem
+- Hệ thống sẽ hiển thị tất cả camera trong khu vực đó
+
+**b) Hiển thị video**
+- Tất cả camera trong khu vực được hiển thị dưới dạng lưới (grid)
+- Mỗi video có tên camera
+- Video tự động phát (WebRTC/HLS)
+- Hỗ trợ full screen cho từng camera
+
+**c) Xem full tất cả**
+- Có tùy chọn xem tất cả camera từ tất cả khu vực cùng lúc
+- Phù hợp cho monitoring tổng quan
+
+#### Lưu ý
+- Đây là màn hình đơn giản nhất để xem camera nhanh
+- Không có bộ lọc phức tạp
+- Chỉ xem live, không xem lại video
+
+---
+
+### 2. Màn hình GIÁM SÁT (Monitoring)
+
+Màn hình chính của hệ thống với 4 tab con. Chuyển đổi giữa các tab bằng cách click vào nút tương ứng.
+
+---
+
+#### Tab 2.1: Xem trực tiếp (Live View)
+
+Tab này cho phép xem video trực tiếp từ các camera theo thời gian thực với bộ lọc linh hoạt.
 
 #### Tính năng chính
 
@@ -157,9 +197,9 @@ Người dùng có thể lựa chọn xem video theo nhiều cách:
 
 ---
 
-### 2. Màn hình Xem lại video
+#### Tab 2.2: Xem lại video (Recorded View)
 
-Màn hình này cho phép tìm kiếm và xem lại các video đã ghi lại (recordings).
+Tab này cho phép tìm kiếm và xem lại các video đã ghi lại (recordings).
 
 #### Tính năng chính
 
@@ -212,18 +252,19 @@ Hiển thị các thông tin chi tiết:
 
 ---
 
-### 3. Màn hình Sự kiện
+#### Tab 2.3: Sự kiện (Events - trong Giám sát)
 
-Màn hình này hiển thị các sự kiện phát hiện được từ camera (motion detection, object detection, face detection, etc.).
+Tab này hiển thị **thông báo tạm thời** về các sự kiện mới phát hiện được.
 
 #### Tính năng chính
 
-**a) Thông báo sự kiện thời gian thực**
+**a) Thông báo sự kiện thời gian thực (Tạm thời)**
 
 - Hiển thị tối đa **25 sự kiện mới nhất**
 - Sự kiện được cập nhật tự động khi có phát hiện mới
-- Tự động xóa các sự kiện **sau 30 phút** để giữ danh sách gọn gàng
+- **Tự động xóa các sự kiện sau 30 phút** để giữ danh sách thông báo gọn gàng
 - Khi có sự kiện mới, sự kiện cũ nhất sẽ bị đẩy ra khỏi danh sách (nếu đã đủ 25 sự kiện)
+- ⚠️ **Lưu ý**: Đây chỉ là danh sách thông báo tạm thời, sự kiện vẫn được lưu vĩnh viễn trong thư mục `snapshot/`
 
 **b) Bộ lọc sự kiện**
 
@@ -258,15 +299,14 @@ Mỗi sự kiện hiển thị:
 - Hỗ trợ phát trực tiếp trong ứng dụng
 
 #### Lưu ý
-- Sự kiện được lưu vĩnh viễn trong thư mục `snapshot/` cho đến khi người dùng xóa hoặc hết hạn lưu trữ
-- Danh sách 25 sự kiện trong màn hình chỉ là thông báo tạm thời, không ảnh hưởng đến dữ liệu đã lưu
-- Có thể xem lại toàn bộ sự kiện đã lưu bằng cách thay đổi bộ lọc
+- Tab này chỉ hiển thị **thông báo tạm thời** (25 sự kiện gần nhất, xóa sau 30p)
+- Để xem **toàn bộ sự kiện đã lưu**, sử dụng màn hình **SỰ KIỆN** (mục 3 bên dưới)
 
 ---
 
-### 4. Màn hình Cài đặt
+#### Tab 2.4: Cài đặt (Settings)
 
-Màn hình này cho phép quản lý cấu hình hệ thống.
+Tab này cho phép quản lý cấu hình hệ thống.
 
 #### Tính năng chính
 
@@ -349,6 +389,74 @@ Events: 180 ngày     → Sự kiện cũ hơn 180 ngày bị xóa tự động
 - Tất cả thay đổi về khu vực/camera được lưu vào file `data.json` và cập nhật trên backend
 - Nên backup file `data.json` trước khi thực hiện thay đổi lớn
 - Khi xóa toàn bộ video/sự kiện, dữ liệu sẽ **KHÔNG THỂ KHÔI PHỤC**
+
+---
+
+### 3. Màn hình SỰ KIỆN (Events - Standalone)
+
+Màn hình riêng biệt để xem **toàn bộ sự kiện đã lưu** trong thư mục `snapshot/`.
+
+#### Tính năng chính
+
+**a) Xem toàn bộ sự kiện (Không giới hạn)**
+
+- Hiển thị **TẤT CẢ** sự kiện đã được lưu trong hệ thống
+- **KHÔNG** bị xóa sau 30 phút (khác với tab Sự kiện trong Giám sát)
+- **KHÔNG** giới hạn 25 sự kiện
+- Sự kiện chỉ bị xóa khi:
+  - Người dùng xóa thủ công
+  - Hết hạn lưu trữ (theo cài đặt Data Retention)
+  - Người dùng nhấn "Xóa toàn bộ sự kiện" trong Settings
+
+**b) Bộ lọc toàn diện**
+
+1. **Lọc theo Khu vực**:
+   - Chọn "Tất cả" để xem sự kiện từ tất cả khu vực
+   - Chọn khu vực cụ thể để xem sự kiện trong khu vực đó
+
+2. **Lọc theo Camera**:
+   - Chọn "Tất cả" để xem sự kiện từ tất cả camera
+   - Chọn camera cụ thể để xem sự kiện của camera đó
+
+3. **Lọc theo Loại sự kiện**:
+   - **All Type**: Hiển thị tất cả loại sự kiện
+   - Checkbox cho từng loại: `event_type_1`, `event_type_2`, `event_type_3`, etc.
+   - Có thể chọn nhiều loại cùng lúc
+
+4. **Lọc theo Thời gian** (nếu có):
+   - Chọn khoảng thời gian để xem sự kiện trong khoảng đó
+
+**c) Hiển thị chi tiết sự kiện**
+
+Mỗi sự kiện hiển thị:
+- **Thumbnail/Ảnh chụp**: Hình ảnh từ sự kiện
+- **Tên khu vực**: Khu vực mà camera thuộc về
+- **Tên camera**: Camera phát hiện sự kiện
+- **Loại sự kiện**: event_type_1, event_type_2, v.v.
+- **Thời gian**: Thời điểm phát hiện (ngày, giờ, phút, giây)
+- **Nút phát video**: Click để xem video sự kiện
+
+**d) Phát video sự kiện**
+
+- Click vào sự kiện hoặc nút phát để xem video
+- Video được phát trực tiếp từ thư mục `snapshot/`
+- Hỗ trợ điều khiển: phát, tạm dừng, tua, âm lượng
+- Click "Đóng" để quay lại danh sách
+
+#### So sánh: Tab Sự kiện (Giám sát) vs Màn hình SỰ KIỆN
+
+| Tính năng | Tab Sự kiện (Giám sát) | Màn hình SỰ KIỆN |
+|-----------|------------------------|------------------|
+| Số lượng hiển thị | Tối đa 25 sự kiện | Không giới hạn (tất cả) |
+| Thời gian lưu | Xóa sau 30 phút | Lưu vĩnh viễn (theo cài đặt) |
+| Mục đích | Thông báo tạm thời | Xem lại lịch sử đầy đủ |
+| Bộ lọc | Cơ bản | Toàn diện |
+| Cập nhật real-time | Có | Có |
+
+#### Lưu ý
+- Đây là màn hình chính để **review lại sự kiện**
+- Phù hợp cho việc điều tra, phân tích sau khi có sự cố
+- Sự kiện được lưu theo cấu trúc: `snapshot/<area>/<camera>/<event_type>_<timestamp>.mp4`
 
 ---
 
