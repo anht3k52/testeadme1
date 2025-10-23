@@ -21,7 +21,8 @@
 6. [Cấu hình và Tùy chỉnh](#cấu-hình-và-tùy-chỉnh)
 7. [Sizing ổ cứng lưu trữ](#sizing-ổ-cứng-lưu-trữ)
 8. [Khắc phục sự cố](#khắc-phục-sự-cố)
-9. [Build Production](#build-production)
+9. [Test Real-time Events](#test-real-time-events)
+10. [Build Production](#build-production)
 
 ---
 
@@ -30,7 +31,7 @@
 ### Phần cứng tối thiểu
 - **CPU**: Intel Core i5 thế hệ 8 trở lên (hoặc AMD Ryzen 5)
 - **RAM**: 8GB (khuyến nghị 16GB cho nhiều camera)
-- **Ổ cứng**: Tối thiểu 20GB trống (xem [Sizing ổ cứng lưu trữ](#sizing-ổ-cứng-lưu-trữ))
+- **Ổ cứng**: Tối thiểu 100GB trống (xem [Sizing ổ cứng lưu trữ](#sizing-ổ-cứng-lưu-trữ))
 - **Card mạng**: Ethernet 1Gbps (khuyến nghị cho nhiều luồng video)
 
 ### Phần mềm
@@ -368,8 +369,12 @@ Tab này cho phép quản lý cấu hình hệ thống.
 3. **Các nút điều khiển**:
    - **Lưu**: Lưu cài đặt thời gian lưu trữ vào hệ thống
    - **Chạy ngay**: Thực hiện xóa các file cũ **ngay lập tức** theo cài đặt hiện tại
-   - **Xóa toàn bộ video**: Xóa **TẤT CẢ** video trong thư mục `recordings/` (cần xác nhận, **KHÔNG THỂ KHÔI PHỤC**)
-   - **Xóa toàn bộ sự kiện**: Xóa **TẤT CẢ** sự kiện trong thư mục `snapshot/` (cần xác nhận, **KHÔNG THỂ KHÔI PHỤC**)
+   - **Xóa toàn bộ video**: ⚠️ Xóa **TẤT CẢ** video trong thư mục `recordings/` 
+     - Yêu cầu **XÁC NHẬN** trước khi thực hiện
+     - Dữ liệu sẽ **KHÔNG THỂ KHÔI PHỤC** sau khi xóa
+   - **Xóa toàn bộ sự kiện**: ⚠️ Xóa **TẤT CẢ** sự kiện trong thư mục `snapshot/`
+     - Yêu cầu **XÁC NHẬN** trước khi thực hiện
+     - Dữ liệu sẽ **KHÔNG THỂ KHÔI PHỤC** sau khi xóa
 
 4. **Lịch trình tự động** (Scheduled Cleanup):
    - Hệ thống tự động chạy cleanup **mỗi ngày vào lúc 2:00 AM** (theo giờ hệ thống)
@@ -388,10 +393,14 @@ Events: 180 ngày     → Sự kiện cũ hơn 180 ngày bị xóa tự động
 - Nếu muốn xóa ngay lập tức, nhấn nút "Chạy ngay"
 - Cài đặt được lưu vào file `retention.json` và sẽ không mất khi restart ứng dụng
 
-#### Lưu ý
+#### Lưu ý quan trọng
 - Tất cả thay đổi về khu vực/camera được lưu vào file `data.json` và cập nhật trên backend
 - Nên backup file `data.json` trước khi thực hiện thay đổi lớn
-- Khi xóa toàn bộ video/sự kiện, dữ liệu sẽ **KHÔNG THỂ KHÔI PHỤC**
+- ⚠️ **CẢNH BÁO**: Khi sử dụng nút "Xóa toàn bộ video" hoặc "Xóa toàn bộ sự kiện":
+  - Hệ thống sẽ hiển thị **dialog xác nhận** để đảm bảo bạn thực sự muốn xóa
+  - Sau khi xác nhận, **TẤT CẢ dữ liệu** trong thư mục tương ứng sẽ bị xóa vĩnh viễn
+  - Dữ liệu đã xóa **KHÔNG THỂ KHÔI PHỤC** bằng bất kỳ cách nào
+  - Khuyến nghị **backup** trước khi thực hiện thao tác này
 
 ---
 
@@ -906,6 +915,120 @@ yarn dev:electron
 - Ví dụ: `192.168.1.100` thay vì `localhost`
 - Sửa `url` trong `data.json` và `Cameradata.ts` thành IP LAN
 - Restart tất cả services
+
+---
+
+## Test Real-time Events
+
+Để kiểm tra tính năng hiển thị sự kiện realtime trong tab "Sự kiện" (màn Giám sát), sử dụng các script test sau:
+
+### Windows
+
+1. **Chạy ứng dụng** (nếu chưa chạy):
+   ```powershell
+   yarn dev:electron
+   ```
+
+2. **Mở tab "Sự kiện"** trong ứng dụng:
+   - Click "GIÁM SÁT"
+   - Click tab "Sự kiện"
+
+3. **Chạy script test** (mở CMD/PowerShell mới):
+   ```powershell
+   .\test_events.bat
+   ```
+
+4. **Quan sát kết quả**:
+   - Script sẽ tạo 25 sự kiện trong 50 giây (mỗi 2 giây 1 sự kiện)
+   - Sự kiện mới xuất hiện **tự động** trong app mỗi 1-2 giây
+   - Sự kiện mới nhất hiển thị ở đầu danh sách
+   - Không cần refresh hoặc chuyển tab
+
+### Linux/macOS
+
+1. **Chạy ứng dụng** (nếu chưa chạy):
+   ```bash
+   yarn dev:electron
+   ```
+
+2. **Mở tab "Sự kiện"** trong ứng dụng:
+   - Click "GIÁM SÁT"
+   - Click tab "Sự kiện"
+
+3. **Chạy script test** (mở terminal mới):
+   ```bash
+   chmod +x test_events.sh
+   ./test_events.sh
+   ```
+
+4. **Quan sát kết quả**:
+   - Script sẽ tạo 25 sự kiện trong 50 giây (mỗi 2 giây 1 sự kiện)
+   - Sự kiện mới xuất hiện **tự động** trong app mỗi 1-2 giây
+   - Sự kiện mới nhất hiển thị ở đầu danh sách
+   - Không cần refresh hoặc chuyển tab
+
+### Kết quả mong đợi
+
+**Trong console/terminal chạy script**:
+```
+[1/25] [12:34:01] Khu vực 1 - Camera 1 - event_type_1
+[2/25] [12:34:03] Khu vực 2 - Camera 2 - event_type_2
+[3/25] [12:34:05] Khu vực 2 - Camera 1 - event_type_1
+...
+[25/25] [12:34:49] Khu vực 1 - Camera 1 - event_type_1
+✅ Đã tạo xong 25 sự kiện!
+```
+
+**Trong ứng dụng (Tab Sự kiện)**:
+- ✅ Sự kiện xuất hiện **realtime** (auto-refresh mỗi 1 giây)
+- ✅ Hiển thị tối đa 25 sự kiện
+- ✅ Icon màu sắc khác nhau theo loại sự kiện
+- ✅ Thông tin đầy đủ: Khu vực, Camera, Loại, Thời gian
+- ✅ Nút phát video cho mỗi sự kiện
+- ✅ Sự kiện mới nhất luôn ở vị trí đầu tiên
+
+### Cấu trúc file được tạo
+
+```
+E:\Fe\camera-tracker\snapshot\
+├── khu-vuc-1\
+│   └── event_type_1\
+│       └── camera_name_1\
+│           └── 2024-10-24\
+│               ├── 2024-10-24_12-34-01-123.mp4
+│               ├── 2024-10-24_12-34-05-456.mp4
+│               └── ...
+└── khu-vuc-2\
+    ├── event_type_1\
+    │   └── camera_name_1\
+    │       └── 2024-10-24\
+    │           └── ...
+    └── event_type_2\
+        └── camera_name_2\
+            └── 2024-10-24\
+                └── ...
+```
+
+**Format tên file**: `YYYY-MM-DD_HH-MM-SS-milliseconds.mp4`
+
+### Dọn dẹp sau khi test
+
+**Windows**:
+```powershell
+rmdir /s /q snapshot
+```
+
+**Linux/macOS**:
+```bash
+rm -rf snapshot
+```
+
+### Lưu ý
+
+- Tab "Sự kiện" tự động refresh mỗi **1 giây** khi đang mở
+- Chỉ hiển thị **25 sự kiện mới nhất** (theo spec)
+- Sự kiện cũ hơn **30 phút** sẽ tự động bị xóa khỏi danh sách tạm thời
+- Để xem **toàn bộ sự kiện** đã lưu, sử dụng màn hình "SỰ KIỆN" (không giới hạn)
 
 ---
 
