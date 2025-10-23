@@ -27,7 +27,7 @@
 ### Phần cứng tối thiểu
 - **CPU**: Intel Core i5 thế hệ 8 trở lên (hoặc AMD Ryzen 5)
 - **RAM**: 8GB (khuyến nghị 16GB cho nhiều camera)
-- **Ổ cứng**: Tối thiểu 100GB trống (xem [Sizing ổ cứng lưu trữ](#sizing-ổ-cứng-lưu-trữ))
+- **Ổ cứng**: Tối thiểu 20GB trống (xem [Sizing ổ cứng lưu trữ](#sizing-ổ-cứng-lưu-trữ))
 - **Card mạng**: Ethernet 1Gbps (khuyến nghị cho nhiều luồng video)
 
 ### Phần mềm
@@ -71,7 +71,7 @@ yarn install
 
 2. **Khởi chạy với IP LAN tùy chỉnh** (cho WebRTC qua mạng nội bộ):
 
-   ```powershell
+```powershell
    .\run_media.bat 192.168.1.24
    ```
 
@@ -81,16 +81,30 @@ yarn install
 
 ### Linux/macOS
 
+1. **Khởi chạy thông thường** (khuyến nghị):
+
 ```bash
-bash scripts/run_media.sh [--ip 192.168.1.24] [--input ./input.mp4] [--no-edit-cameradata]
-```
+   bash scripts/run_media.sh
+   ```
+   
+   Script sẽ tự động:
+   - Phát hiện IP LAN của máy
+   - Sử dụng file `input.mp4` làm nguồn video mẫu
+   - Cập nhật host trong `Cameradata.ts` thành IP LAN
+   - Khởi động MediaMTX, FFmpeg và Electron
 
-**Các tham số**:
-- `--ip`: Chỉ định IP LAN (nếu không, script sẽ tự động phát hiện)
-- `--input`: Đường dẫn file video mẫu (mặc định: `input.mp4`)
-- `--no-edit-cameradata`: Không tự động cập nhật host trong `Cameradata.ts`
+2. **Khởi chạy nâng cao** (với tùy chọn):
 
-**Kết quả**: Script sẽ tự động khởi động MediaMTX, spawn FFmpeg, và chạy Electron ở chế độ nền.
+```bash
+   bash scripts/run_media.sh --ip 192.168.1.24 --input ./input.mp4 --no-edit-cameradata
+   ```
+   
+   **Các tham số tùy chọn**:
+   - `--ip <IP>`: Chỉ định IP LAN cụ thể (thay vì để script tự phát hiện)
+   - `--input <file>`: Đường dẫn file video mẫu tùy chỉnh (mặc định: `input.mp4`)
+   - `--no-edit-cameradata`: KHÔNG tự động cập nhật host trong `Cameradata.ts`
+
+**Kết quả**: Script sẽ tự động khởi động MediaMTX, spawn FFmpeg cho từng stream, và chạy Electron ở chế độ nền.
 
 ---
 
@@ -298,23 +312,38 @@ Màn hình này cho phép quản lý cấu hình hệ thống.
 
 **d) Cài đặt thời gian lưu trữ (Data Retention)**
 
-1. **Thời gian lưu trữ Video ghi hình**:
-   - Nhập số ngày lưu trữ (mặc định: 180 ngày)
-   - Video cũ hơn số ngày này sẽ tự động bị xóa
+1. **Thời gian lưu trữ Video ghi hình (Recordings)**:
+   - Nhập số ngày lưu trữ (mặc định: **180 ngày**)
+   - Ví dụ: Nhập **30** → Video cũ hơn 30 ngày sẽ tự động bị xóa
+   - Video mới hơn 30 ngày sẽ được giữ lại
 
-2. **Thời gian lưu trữ Sự kiện**:
-   - Nhập số ngày lưu trữ (mặc định: 180 ngày)
-   - Sự kiện (snapshot) cũ hơn số ngày này sẽ tự động bị xóa
+2. **Thời gian lưu trữ Sự kiện (Events)**:
+   - Nhập số ngày lưu trữ (mặc định: **180 ngày**)
+   - Ví dụ: Nhập **180** → Sự kiện (snapshot) cũ hơn 180 ngày sẽ tự động bị xóa
+   - Sự kiện mới hơn 180 ngày sẽ được giữ lại
 
 3. **Các nút điều khiển**:
-   - **Lưu**: Lưu cài đặt thời gian lưu trữ
-   - **Chạy ngay**: Thực hiện xóa các file cũ ngay lập tức theo cài đặt hiện tại
-   - **Xóa toàn bộ video**: Xóa TẤT CẢ video trong thư mục `recordings/` (cần xác nhận)
-   - **Xóa toàn bộ sự kiện**: Xóa TẤT CẢ sự kiện trong thư mục `snapshot/` (cần xác nhận)
+   - **Lưu**: Lưu cài đặt thời gian lưu trữ vào hệ thống
+   - **Chạy ngay**: Thực hiện xóa các file cũ **ngay lập tức** theo cài đặt hiện tại
+   - **Xóa toàn bộ video**: Xóa **TẤT CẢ** video trong thư mục `recordings/` (cần xác nhận, **KHÔNG THỂ KHÔI PHỤC**)
+   - **Xóa toàn bộ sự kiện**: Xóa **TẤT CẢ** sự kiện trong thư mục `snapshot/` (cần xác nhận, **KHÔNG THỂ KHÔI PHỤC**)
 
-4. **Lịch trình tự động**:
-   - Hệ thống tự động chạy cleanup **mỗi ngày vào lúc 2:00 AM** để xóa các file hết hạn
+4. **Lịch trình tự động** (Scheduled Cleanup):
+   - Hệ thống tự động chạy cleanup **mỗi ngày vào lúc 2:00 AM** (theo giờ hệ thống)
+   - Tự động xóa các file cũ hơn số ngày đã cài đặt
    - Không cần can thiệp thủ công
+   - File `retention.json` lưu cấu hình số ngày
+
+**Ví dụ cấu hình thực tế**:
+```
+Recordings: 30 ngày  → Video cũ hơn 30 ngày bị xóa tự động
+Events: 180 ngày     → Sự kiện cũ hơn 180 ngày bị xóa tự động
+```
+
+**Lưu ý quan trọng**:
+- Sau khi thay đổi số ngày và nhấn "Lưu", hệ thống chỉ áp dụng từ lần cleanup tiếp theo (2:00 AM ngày hôm sau)
+- Nếu muốn xóa ngay lập tức, nhấn nút "Chạy ngay"
+- Cài đặt được lưu vào file `retention.json` và sẽ không mất khi restart ứng dụng
 
 #### Lưu ý
 - Tất cả thay đổi về khu vực/camera được lưu vào file `data.json` và cập nhật trên backend
@@ -813,89 +842,3 @@ yarn build --mac
 # Linux (tạo .AppImage)
 yarn build --linux
 ```
-
----
-
-## Tài liệu bổ sung
-
-### Roadmap tính năng
-
-- [ ] **AI Object Detection**: Tích hợp YOLO/TensorFlow cho phát hiện đối tượng
-- [ ] **Face Recognition**: Nhận diện khuôn mặt và lưu database
-- [ ] **Motion Detection**: Phát hiện chuyển động và tự động ghi hình
-- [ ] **Multi-language**: Hỗ trợ tiếng Anh/Việt/Trung
-- [ ] **Cloud Backup**: Tự động backup video lên cloud (AWS S3, Google Cloud Storage)
-- [ ] **Mobile App**: Ứng dụng mobile iOS/Android để xem camera từ xa
-- [ ] **Notification**: Gửi thông báo qua email/SMS khi có sự kiện
-- [ ] **User Management**: Quản lý người dùng và phân quyền
-
-### Đóng góp
-
-Mọi đóng góp đều được hoan nghênh! Vui lòng:
-1. Fork repository
-2. Tạo branch mới: `git checkout -b feature/amazing-feature`
-3. Commit thay đổi: `git commit -m 'Add some amazing feature'`
-4. Push lên branch: `git push origin feature/amazing-feature`
-5. Tạo Pull Request
-
-### License
-
-[MIT License](LICENSE)
-
----
-
-## Liên hệ và Hỗ trợ
-
-**Nhật Dương** - Tác giả/Maintainer
-- Email: [your-email@example.com]
-- GitHub: [@nhatduong]
-
-**Issue Tracker**: [https://github.com/your-repo/issues]
-
----
-
-## Ghi chú cho Nhật Dương
-
-Tài liệu này cần được bổ sung thêm:
-
-1. **Sizing ổ cứng lưu trữ**: 
-   - Bảng sizing chi tiết cho các kịch bản khác nhau (bitrate khác, số camera khác)
-   - Công thức tính toán cụ thể
-   - Khuyến nghị loại ổ cứng (SSD vs HDD, RAID level)
-   - ✅ **ĐÃ BỔ SUNG trong phần [Sizing ổ cứng lưu trữ](#sizing-ổ-cứng-lưu-trữ)**
-
-2. **Mô hình kiến trúc**:
-   - Sơ đồ kiến trúc chi tiết (vẽ bằng draw.io hoặc PlantUML)
-   - Luồng dữ liệu (data flow diagram)
-   - Sequence diagram cho các use case chính
-   - ✅ **ĐÃ BỔ SUNG sơ đồ ASCII trong phần [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)**
-   - ❗ **CẦN VẼ SƠ ĐỒ CHUYÊN NGHIỆP BẰNG DRAW.IO/LUCIDCHART**
-
-3. **Giao tiếp giữa các services**:
-   - Chi tiết các IPC channels (request/response format)
-   - API documentation cho mỗi endpoint
-   - WebSocket/Event flow cho real-time updates
-   - ✅ **ĐÃ BỔ SUNG trong phần [Giao tiếp giữa các services](#giao-tiếp-giữa-các-services)**
-
-4. **Hướng dẫn sử dụng tất cả các màn hình**:
-   - ✅ Screenshots cho mỗi màn hình (cần chụp màn hình và thêm vào)
-   - ✅ Video demo/GIF cho các tính năng chính
-   - ✅ Step-by-step tutorial cho người dùng mới
-
-**Action Items cho Nhật Dương**:
-- [ ] Vẽ sơ đồ kiến trúc bằng draw.io (xuất file .png và .drawio)
-- [ ] Vẽ sequence diagram cho 4 màn hình chính
-- [ ] Chụp screenshots tất cả màn hình (độ phân giải cao)
-- [ ] Quay video demo ngắn (2-3 phút) giới thiệu hệ thống
-- [ ] Review và cập nhật bảng sizing với các kịch bản thực tế
-- [ ] Viết API documentation cho IPC channels (format OpenAPI/Swagger)
-- [ ] Tạo file `docs/architecture.md` chi tiết hơn
-- [ ] Tạo file `docs/api.md` cho IPC API reference
-
-**Deadline**: [Ngày cần hoàn thành - do anh/leader quyết định]
-
----
-
-**Phiên bản tài liệu**: 2.0  
-**Ngày cập nhật**: 2025-10-23  
-**Người cập nhật**: AI Assistant (cần review bởi Nhật Dương)
